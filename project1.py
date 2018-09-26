@@ -7,7 +7,7 @@ Created on Wed Sep 26 10:06:44 2018
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-
+from io import BytesIO
 
 # Load xls sheet with data
 
@@ -56,7 +56,7 @@ def dataLoad(filename):
         elif data[i,9] < 0 :
             print("Error in data line %s. sulpates: %s; Data line skipped" % (i+1,data[i,9]) )
             removeline = True
-        elif data[i,10] < 0 :
+        elif 0 > data[i,10] > 30 :
             print("Error in data line %s. alchohol: %s; Data line skipped" % (i+1,data[i,10]) )
             removeline = True
         elif 10 < data[i,11] < 0 or not data[i,11].is_integer():
@@ -71,15 +71,27 @@ def dataLoad(filename):
     if noerrors:
         print("Data loaded. No errors found.")
     else:
-        print("Data loaded.)
+        print("Data loaded.")
     return data
 
-
-
-def histogram(line):
+def histogram(line,title,xlab):
     plt.hist(data[:,line],bins='auto')
+    plt.title(title)
+    plt.ylabel('Amount')
+    plt.xlabel(xlab)
+    plt.savefig(title +'.png')
+    plt.show()
     
+def scatter(x,y,xlab,ylab,title):
+    plt.plot(data[:,x],data[:,y],'bo',linewidth = 0)    
+    plt.xlabel(xlab)
+    plt.ylabel(ylab)
+    plt.title(title)
+    plt.savefig(title +'.png')
+    plt.show()
     
     
 data = dataLoad("winequality-white.csv")
-histogram(10)
+histogram(4,"Histogram Chlorides","Chlorides mg/l")
+
+scatter(10,11,'Alcohol %','Quality','Quality compared to alcohol')
