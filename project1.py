@@ -7,7 +7,10 @@ Created on Wed Sep 26 10:06:44 2018
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-from io import BytesIO
+import scipy.linalg as linalg
+import matplotlib.pylab as pl
+import pandas as pd
+from sklearn import datasets
 
 # Load xls sheet with data
 
@@ -20,6 +23,8 @@ def dataLoad(filename):
         csvReader = csv.reader(csvDataFile,delimiter=';')
         for row in csvReader:
             inputdata.append(row)
+    iris = pd.DataFrame(inputdata)
+    print(iris.tail(1))
     inputdata.pop(0)
     data = np.asarray(inputdata).astype(np.float) #converting list to array containing all floats, no reason not to cast all to floats 
     
@@ -79,19 +84,82 @@ def histogram(line,title,xlab):
     plt.title(title)
     plt.ylabel('Amount')
     plt.xlabel(xlab)
-    plt.savefig(title +'.png')
-    plt.show()
+#    plt.savefig(title +'.png')
+#    plt.show()
     
 def scatter(x,y,xlab,ylab,title):
     plt.plot(data[:,x],data[:,y],'bo',linewidth = 0)    
     plt.xlabel(xlab)
     plt.ylabel(ylab)
     plt.title(title)
-    plt.savefig(title +'.png')
-    plt.show()
+#    plt.savefig(title +'.png')
+#    plt.show()
     
-    
-data = dataLoad("winequality-white.csv")
-histogram(4,"Histogram Chlorides","Chlorides mg/l")
 
+   
+data = dataLoad("winequality-white.csv")
+
+plt.figure(figsize=(10, 6),dpi=100)
+plt.subplot(1,2,1)
+histogram(11,"Quality","Score")
+plt.subplot(1,2,2)
+histogram(10,"Alcohol %","Alcohol %")
+plt.show()
 scatter(10,11,'Alcohol %','Quality','Quality compared to alcohol')
+
+datatrimmed = data[:,0:12] # trim out ratings to group these
+
+
+n = range(3,10)
+y = data[:,11] #column with ratings
+N,M = datatrimmed.shape
+
+Xc = datatrimmed - np.ones((N,1))*datatrimmed.mean(0)
+
+## Following is from ex2_2_2.py provided by the course
+# PCA by computing SVD of Y
+U,S,V = linalg.svd(Xc,full_matrices=False)
+#U = mat(U)
+V = V.T
+
+# Compute variance explained by principal components
+rho = (S*S) / (S*S).sum() 
+
+# Project data onto principal component space
+Z = Xc @ V
+
+# Plot variance explained
+plt.figure(figsize=(10, 6),dpi=100)
+plt.subplot(1,2,1)
+plt.plot(range(1,M+1),rho,'o-')
+plt.title('Variance explained by principal components');
+plt.xlabel('Principal component');
+plt.ylabel('Variance explained value');
+plt.grid()
+
+
+
+plt.subplot(1,2,2)
+
+plt.title('Wine attributes projected on the first PC')
+for c in n:
+    # select indices belonging to class c:
+    class_mask = (y == c)
+    plt.plot(Z[class_mask,0], data[class_mask,11], 'o', fillstyle='none')
+plt.legend(n)
+plt.grid()
+
+plt.xlabel("PC1")
+plt.ylabel("Quality")
+
+## Components needed for to explain more than 90% of the variance.
+rhosum = 0
+for i in range(len(rho)):
+    rhosum += rho[i]
+    if rhosum > 0.9:
+        break
+print(i+1,"PCA component(s) needed for +90 percent")
+
+
+
+    
