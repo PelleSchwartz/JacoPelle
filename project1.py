@@ -105,6 +105,7 @@ histogram(11,"Quality","Score")
 plt.subplot(1,2,2)
 histogram(10,"Alcohol %","Alcohol %")
 plt.show()
+
 scatter(10,11,'Alcohol %','Quality','Quality compared to alcohol')
 
 datatrimmed = data[:,0:12] # trim out ratings to group these
@@ -137,7 +138,7 @@ plt.xlabel('Principal component');
 plt.ylabel('Variance explained value');
 plt.grid()
 
-
+covar = np.cov(data.T)
 
 plt.subplot(1,2,2)
 
@@ -151,6 +152,16 @@ plt.grid()
 
 plt.xlabel("PC1")
 plt.ylabel("Quality")
+
+summary = np.ones((5,M))
+for i in range(0,M):
+    summary[0,i] = np.percentile(data[:,i],75)
+    summary[1,i] = np.mean(data[:,i])
+    summary[2,i] = np.percentile(data[:,i],25)
+    summary[3,i] = np.std(data[:,i])
+    summary[4,i] = np.var(data[:,i])
+summary = np.round(summary, 5)
+
 
 ## Components needed for to explain more than 90% of the variance.
 rhosum = 0
